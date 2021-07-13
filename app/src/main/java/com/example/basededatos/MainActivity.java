@@ -7,12 +7,19 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.Toast;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
     private EditText edcodigo, ednombre, edprecio;
+    private Spinner sp1;
+    ArrayList<String> listaProductos;
+    ArrayList<Producto> productosList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,7 +29,41 @@ public class MainActivity extends AppCompatActivity {
         edcodigo = findViewById(R.id.edcodigo);
         ednombre = findViewById(R.id.ednombre);
         edprecio = findViewById(R.id.edprecio);
+        sp1 = findViewById(R.id.spinner);
+
+        ArrayAdapter<String> adaptador = new ArrayAdapter(this, android.R.layout.simple_spinner_item, listaProductos);
+        sp1.setAdapter(adaptador);
+        consultarListaProductos();
+
     }
+
+
+    public void consultarListaProductos() {
+        adminbd Admin = new adminbd(this, "Productos", null, 1);
+        SQLiteDatabase base = Admin.getReadableDatabase();
+        Producto p1 = new Producto();
+        productosList = new ArrayList<Producto>();
+
+        Cursor fila = base.rawQuery("select * from producto", null);
+        while (fila.moveToNext()) {
+            p1.setCodigo(fila.getInt(0));
+            p1.setNombre(fila.getString(1));
+            p1.setPrecio(fila.getInt(2));
+            productosList.add(p1);
+        }
+
+    }
+
+    public void obtenerProducto () {
+        listaProductos = new ArrayList<String>();
+        for (int i = 0; i < productosList.size(); i++ ) {
+            listaProductos.add(productosList.get(i).getCodigo() + " - "
+                    + productosList.get(i).getNombre() + " - " + productosList.get(i).getPrecio());
+
+        }
+    }
+
+
 
     public void crear(View v) {
         adminbd admin = new adminbd(this, "Productos", null, 1);
@@ -45,12 +86,14 @@ public class MainActivity extends AppCompatActivity {
             edprecio.setText("");
             Toast.makeText(this, "Producto creado", Toast.LENGTH_LONG).show();
 
-        }else{
+        } else {
 
             Toast.makeText(this, "Debes llenar todos los campos", Toast.LENGTH_LONG).show();
         }
 
     }
+
+
         public void buscar(View v) {
 
             adminbd Admin = new adminbd(this, "Productos", null, 1);
